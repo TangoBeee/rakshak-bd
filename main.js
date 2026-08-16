@@ -11,6 +11,29 @@
 
   const P = MEDIA.photos;
 
+  /* ── song ducking ─────────────────────────────────────────────
+     Ramps the background song down while a clip with its own audio
+     plays, and back up afterwards. Declared early because the stage
+     calls it before the music section runs.                        */
+  const FULL_VOL = MEDIA.volume ?? 0.6;
+  const DUCK_VOL = MEDIA.duckVolume ?? 0.08;
+  let duckTimer = null, ducked = false;
+
+  function duck(on) {
+    if (on === ducked) return;
+    ducked = on;
+    const a = el('audio');
+    const to = on ? DUCK_VOL : FULL_VOL;
+    const from = a.volume;
+    clearInterval(duckTimer);
+    let i = 0, steps = 18;
+    duckTimer = setInterval(() => {
+      i++;
+      a.volume = Math.min(1, Math.max(0, from + (to - from) * (i / steps)));
+      if (i >= steps) clearInterval(duckTimer);
+    }, 22);
+  }
+
 
   /* ════ 1 · CHANNELS ═══════════════════════════════════════════ */
 
@@ -45,19 +68,38 @@
   }
   const unmiss = () => { const m = $('.stage__miss', stage); if (m) m.style.display = 'none'; };
 
-  function showVideo(src) {
+  function showVideo(clip) {
+    const src = clip && clip.src;
     pic.classList.remove('is-live');
-    if (!src) { vid.classList.remove('is-live'); vidBlur.classList.remove('is-live'); return miss('no clip yet · drop one in assets/videos/'); }
+    if (!src) {
+      vid.classList.remove('is-live'); vidBlur.classList.remove('is-live');
+      duck(false);
+      return miss('no clip yet · drop one in assets/videos/');
+    }
     unmiss();
     [vid, vidBlur].forEach(v => { if (v.getAttribute('src') !== src) v.setAttribute('src', src); });
-    vid.muted = vidBlur.muted = true;                 // the song is the only audio
+
+    /* the blurred backdrop is a second copy of the same file — always silent,
+       or you'd hear the clip twice, slightly out of sync */
+    vidBlur.muted = true;
+
+    const wantSound = !!clip.sound;
+    vid.muted  = !wantSound;
+    vid.volume = clip.volume ?? 1;
+    duck(wantSound);
+
     vid.classList.add('is-live'); vidBlur.classList.add('is-live');
-    vid.play().catch(() => {}); vidBlur.play().catch(() => {});
+    vidBlur.play().catch(() => {});
+    vid.play().catch(() => {
+      /* browser refused to autoplay with sound — fall back to silent */
+      vid.muted = true; duck(false); vid.play().catch(() => {});
+    });
   }
 
   function showPhoto(cfg) {
     vid.classList.remove('is-live'); vidBlur.classList.remove('is-live');
     vid.pause(); vidBlur.pause();
+    duck(false);
     if (!cfg || !cfg.src) { pic.classList.remove('is-live'); return miss('photo slot empty · see media.js'); }
     const probe = new Image();
     probe.onload  = () => { unmiss(); pic.style.backgroundImage = `url("${cfg.src}")`;
@@ -121,8 +163,10 @@
 
     const play = (i) => {
       clipIdx = i;
-      showVideo(clips[i] ? clips[i].src : '');
-      $('.w-dance__label').textContent = clips[i] ? clips[i].label.toUpperCase() : '—';
+      showVideo(clips[i]);
+      $('.w-dance__label').textContent = clips[i]
+        ? clips[i].label.toUpperCase() + (clips[i].sound ? ' 🔊' : '')
+        : '—';
       [...widget.querySelectorAll('.w-dance__dots button')]
         .forEach((b, n) => b.classList.toggle('is-on', n === i));
     };

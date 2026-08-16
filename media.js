@@ -16,17 +16,22 @@ const MEDIA = {
     { src: 'assets/song-1.mp3', title: 'Just Another Day' },
     { src: 'assets/song-2.mp3', title: 'Just Another Day · take 2' },
   ],
-  volume: 0.6,
+  volume:     0.6,   // normal background level
+  duckVolume: 0.08,  // level while a clip with its own sound is playing
 
 
   /* ── CH 01 · dance clips ───────────────────────────────────────
      2–3 short clips is perfect. Vertical phone videos are fine —
      they're letterboxed against a blurred copy of themselves.
-     Add or remove entries freely; the dots at the bottom follow.   */
+     Add or remove entries freely; the dots at the bottom follow.
+
+     Add  sound: true  to a clip whose own audio matters — the song ducks
+     down to `duckVolume` while it plays, then comes back up. Clips without
+     it stay silent and the song keeps playing at its normal level.  */
   clips: [
     { src: 'assets/videos/dance-1.mp4', label: 'exhibit A' },
-    { src: 'assets/videos/dance-2.mp4', label: 'exhibit B' },
-    { src: 'assets/videos/dance-3.mp4', label: 'exhibit C' },
+    { src: 'assets/videos/dance-2.mp4', label: 'exhibit B', sound: true },
+    { src: 'assets/videos/dance-3.mp4', label: 'exhibit C', sound: true },
   ],
 
 
