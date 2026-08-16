@@ -13,8 +13,8 @@ const MEDIA = {
      This is the ONLY audio on the page — the dance clips are
      force-muted so they never fight it.                            */
   songs: [
-    { src: 'assets/Just Another Day.mp3',    title: 'Just Another Day' },
-    { src: 'assets/Just Another Day(1).mp3', title: 'Just Another Day · take 2' },
+    { src: 'assets/song-1.mp3', title: 'Just Another Day' },
+    { src: 'assets/song-2.mp3', title: 'Just Another Day · take 2' },
   ],
   volume: 0.6,
 
@@ -30,27 +30,27 @@ const MEDIA = {
   ],
 
 
+
   /* ── photos ────────────────────────────────────────────────────
      Six slots. Any aspect ratio works — they're cropped to fill,
      so use `focus` to keep his face in frame.
      Set src to '' and that channel falls back to a clean colour.   */
   photos: {
 
-    /* the boot-up test card — a small inset portrait of him */
-    testcard:  { src: 'assets/photos/rakshak.jpg',   focus: '50% 35%' },
+    /* boot screen — the clean portrait (with the bird) */
+    testcard:  { src: 'assets/photos/rakshak.jpg',    focus: '50% 42%' },
 
-    /* CH 07 — him, ideally with the water bottle in shot */
-    hydration: { src: 'assets/photos/water.jpg',     focus: 'center' },
+    /* CH 07 — the portrait again; this channel is mostly the readout */
+    hydration: { src: 'assets/photos/rakshak.jpg',    focus: '50% 42%' },
 
-    /* CH 12 — anything late-night / at a desk / lit by a screen */
-    afterhours:{ src: 'assets/photos/late-night.jpg', focus: 'center' },
+    /* CH 12 — feet on the desk, garland on, laptop still open */
+    afterhours:{ src: 'assets/photos/late-night.jpg', focus: '38% 50%' },
 
-    /* CH 23 — two sporty ones: badminton, running, pool, chess… */
-    sports:  [ { src: 'assets/photos/sport-1.jpg',   focus: 'center' },
-               { src: 'assets/photos/sport-2.jpg',   focus: 'center' } ],
+    /* CH 23 — the fist raise. reads as a win. */
+    sports:  [ { src: 'assets/photos/victory.jpg',    focus: '46% 28%' } ],
 
-    /* CH 30 — the nicest one. Vietnam, or you two together */
-    birthday:  { src: 'assets/photos/vietnam.jpg',   focus: '50% 40%' },
+    /* CH 30 — Goa, cap, cash, Big Daddy Casino */
+    birthday:  { src: 'assets/photos/goa.jpg',        focus: '54% 38%' },
   },
 
 
