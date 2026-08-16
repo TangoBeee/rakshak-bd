@@ -483,35 +483,119 @@
     ['confirming age',                 '30', true],
   ];
 
-  const box = el('capBox'), log = el('capLog'), go = el('capGo'), deny = el('capDeny');
-  let checking = false;
+  const box = el('capBox'), log = el('capLog'), go = el('capGo'),
+        deny = el('capDeny'), block = el('capBlock');
+  let checking = false, blocked = false, bypassed = false;
 
-  box.addEventListener('click', () => {
-    if (checking || box.classList.contains('is-on')) return;
+  const REG    = MEDIA.region || {};
+  const ALLOW  = (REG.allow || ['VN']).map(s => String(s).toUpperCase());
+  const SECRET = String(REG.bypass || 'rak').toLowerCase();
+  const napi   = (ms) => new Promise(r => setTimeout(r, ms));
+
+  /* Where is this person? Tried in order; first one that answers wins.
+     All three are keyless, HTTPS, CORS-enabled. */
+  async function locate() {
+    const sources = [
+      ['https://api.country.is/',  d => d.country],
+      ['https://ipwho.is/',        d => d.country_code],
+      ['https://ipapi.co/json/',   d => d.country_code],
+    ];
+    for (const [url, pick] of sources) {
+      try {
+        const stop = new AbortController();
+        const t = setTimeout(() => stop.abort(), 4500);
+        const res = await fetch(url, { signal: stop.signal, cache: 'no-store' });
+        clearTimeout(t);
+        if (!res.ok) continue;
+        const code = pick(await res.json());
+        if (code) return String(code).toUpperCase();
+      } catch { /* try the next one */ }
+    }
+    return null;              // couldn't tell — see the fail-open note below
+  }
+
+  /* start looking straight away so it's ready when the checks finish */
+  const located = locate();
+
+  function line(mark, label, value, cls) {
+    const li = document.createElement('li');
+    if (cls) li.className = cls;
+    li.innerHTML = `<b>${mark}</b><span>${label}${value ? ` <em>${value}</em>` : ''}</span>`;
+    log.appendChild(li);
+    return li;
+  }
+
+  function allowIn() {
+    blocked = false;
+    block.hidden = true;
+    box.classList.remove('is-busy', 'is-fail');
+    box.classList.add('is-on');
+    box.setAttribute('aria-checked', 'true');
+    go.hidden = false;
+    go.focus();
+  }
+
+  async function runCheck() {
     checking = true;
     box.classList.add('is-busy');
     log.classList.add('is-open');
 
-    CHECKS.forEach(([label, value, warn], i) => {
-      setTimeout(() => {
-        const li = document.createElement('li');
-        if (warn) li.className = 'warn';
-        li.innerHTML = `<b>${warn ? '!' : '✓'}</b><span>${label} <em>${value}</em></span>`;
-        log.appendChild(li);
-      }, 260 + i * 300);
-    });
+    for (const [label, value, warn] of CHECKS) {
+      await napi(300);
+      line(warn ? '!' : '✓', label, value, warn ? 'warn' : '');
+    }
 
-    setTimeout(() => {
+    await napi(300);
+    const geo = line('◦', 'confirming broadcast region', 'locating…', 'pend');
+    const cc  = bypassed ? ALLOW[0] : await located;
+    await napi(600);
+
+    /* Fail-open on purpose: if the lookup is blocked or offline we let them
+       through rather than lock Rakshak out of his own birthday. */
+    const ok = bypassed || !cc || ALLOW.includes(cc);
+
+    geo.className = ok ? '' : 'fail';
+    geo.innerHTML = `<b>${ok ? '✓' : '✕'}</b><span>broadcast region ` +
+                    `<em>${bypassed ? 'OVERRIDE' : (cc || 'UNKNOWN')}</em></span>`;
+
+    await napi(320);
+
+    if (ok) {
+      line('✓', 'IDENTITY CONFIRMED — WELCOME BACK, RAKSHAK', '', 'done');
+      allowIn();
+    } else {
+      blocked = true;
       box.classList.remove('is-busy');
-      box.classList.add('is-on');
-      box.setAttribute('aria-checked', 'true');
-      const li = document.createElement('li');
-      li.className = 'done';
-      li.innerHTML = `<b>✓</b><span>IDENTITY CONFIRMED — WELCOME BACK, RAKSHAK</span>`;
-      log.appendChild(li);
-      go.hidden = false;
-      go.focus();
-    }, 260 + CHECKS.length * 300 + 260);
+      box.classList.add('is-fail');
+      line('✕', 'THIS BROADCAST IS LICENSED FOR VIETNAM ONLY', '', 'fail done');
+      block.hidden = false;
+    }
+    checking = false;
+  }
+
+  box.addEventListener('click', () => {
+    if (checking || box.classList.contains('is-on')) return;
+    runCheck();
+  });
+
+  /* ── the hack: type the secret word anywhere on the boot screen ── */
+  let secretBuf = '';
+  addEventListener('keydown', (e) => {
+    if (live || bypassed) return;
+    if (e.key.length !== 1) return;
+    secretBuf = (secretBuf + e.key.toLowerCase()).slice(-12);
+    if (!secretBuf.includes(SECRET)) return;
+
+    secretBuf = '';
+    bypassed  = true;
+
+    if (blocked) {                       // already turned away → let them in
+      line('✓', 'MANUAL OVERRIDE ACCEPTED', '', 'done');
+      allowIn();
+    } else if (!checking && !box.classList.contains('is-on')) {
+      runCheck();                        // not started → run it, pre-approved
+    }
+    /* mid-check: the region step reads `bypassed` when it gets there */
   });
 
   let denies = 0;

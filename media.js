@@ -21,6 +21,22 @@ const MEDIA = {
   leadIn:     2000,  // ms the song plays alone before the first clip starts
 
 
+  /* ── who's allowed in ──────────────────────────────────────────
+     The boot screen looks up the visitor's country from their IP.
+     Only these countries get past the "I am Rakshak" check.
+
+     `bypass` is the secret word — type it anywhere on the boot
+     screen and it lets you straight through, blocked or not.
+
+     Note: if the IP lookup fails or is blocked, the check lets the
+     visitor IN rather than out. Better than locking Rakshak out of
+     his own birthday because an API was down.                      */
+  region: {
+    allow:  ['VN'],
+    bypass: 'rak',
+  },
+
+
   /* ── CH 01 · dance clips ───────────────────────────────────────
      2–3 short clips is perfect. Vertical phone videos are fine —
      they're letterboxed against a blurred copy of themselves.

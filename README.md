@@ -54,7 +54,29 @@ Test locally first: `python3 -m http.server 8000` → http://localhost:8000
 
 **Boot** — TV colour bars behind a "I am Rakshak Satsangi" captcha. Ticking it runs a
 verification (water intake 247%, sleep schedule: none found, rank on file: AIR 23,
-age: 30 ⚠). There's an "I'm not Rakshak" link that sulks at you.
+age: 30 ⚠) and finishes by checking the visitor's country from their IP. There's an
+"I'm not Rakshak" link that sulks at you.
+
+### The region gate 🔒
+
+**Only visitors in Vietnam get past the check.** Everyone else is stopped with
+*SIGNAL UNAVAILABLE IN YOUR REGION*.
+
+**The way in: type `rak`** anywhere on the boot screen. Works whether you've been
+blocked already or haven't touched the checkbox yet. Not hinted at anywhere on the
+page — hand it out to whoever should get in.
+
+Both are in `media.js`:
+
+```js
+region: { allow: ['VN'], bypass: 'rak' }
+```
+
+Add more countries to `allow` (`['VN','IN']`) or change the secret word.
+
+> If the IP lookup fails — API down, ad-blocker, no network — the check lets the
+> visitor **in** rather than out. Being locked out of your own birthday page because
+> a third-party API had a bad day would be worse than a stranger getting in.
 
 **CH 01 · DANCE FLOOR** — the clips, auto-advancing. Click the picture to skip.
 **CH 07 · HYDRATION NETWORK** — a live hydration feed that keeps climbing past 247%.
