@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RAKSHAK TV</title>
+<meta name="description" content="One channel. One birthday. An unreasonable amount of water.">
+<meta name="theme-color" content="#08090a">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📺</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ══ BOOT · test card + identity check ═══════════════════════════ -->
+<div class="boot" id="boot">
+
+  <div class="bars" aria-hidden="true">
+    <i style="--c:#c0c0c0"></i><i style="--c:#c0c000"></i><i style="--c:#00c0c0"></i>
+    <i style="--c:#00c000"></i><i style="--c:#c000c0"></i><i style="--c:#c00000"></i>
+    <i style="--c:#0000c0"></i>
+  </div>
+
+  <div class="boot__inner">
+    <p class="boot__head">RAKSHAK TV <span>·</span> TRANSMISSION PENDING</p>
+
+    <div class="cap" id="cap">
+      <div class="cap__row">
+        <button class="cap__box" id="capBox" role="checkbox" aria-checked="false" aria-label="I am Rakshak Satsangi"></button>
+        <div class="cap__copy">
+          <p class="cap__main">I am Rakshak Satsangi</p>
+          <p class="cap__sub">Identity check required before broadcast.</p>
+        </div>
+        <div class="cap__brand"><span>RAKSHAK</span><b>CAPTCHA</b></div>
+      </div>
+
+      <ul class="cap__log" id="capLog"></ul>
+
+      <div class="cap__foot">
+        <button class="cap__deny" id="capDeny" type="button">I'm not Rakshak</button>
+        <button class="cap__go" id="capGo" type="button" hidden>▶&nbsp; TURN ON</button>
+      </div>
+    </div>
+
+    <p class="boot__foot">17.08.2026 <span>·</span> VIETNAM <span>·</span> CH 30</p>
+  </div>
+
+  <div class="scan" aria-hidden="true"></div>
+</div>
+
+
+<!-- ══ THE SET ═════════════════════════════════════════════════════ -->
+<div class="tv" id="tv" aria-hidden="true">
+
+  <div class="screen" id="screen">
+
+    <!-- media layer -->
+    <div class="stage" id="stage">
+      <video class="stage__blur" id="vidBlur" muted loop playsinline aria-hidden="true"></video>
+      <video class="stage__vid"  id="vid"     muted loop playsinline></video>
+      <div   class="stage__img"  id="pic"></div>
+    </div>
+
+    <!-- per-channel overlay -->
+    <div class="widget" id="widget"></div>
+
+    <!-- broadcast furniture -->
+    <div class="bug">
+      <b id="bugNum">01</b>
+      <span id="bugName">DANCE FLOOR</span>
+    </div>
+
+    <div class="brand">
+      <i class="rec"></i>LIVE
+      <em>RAKSHAK TV</em>
+    </div>
+
+    <div class="ticker">
+      <div class="ticker__track" id="ticker"></div>
+    </div>
+
+    <div class="egg" id="egg" aria-hidden="true"></div>
+
+    <canvas class="static" id="static" aria-hidden="true"></canvas>
+    <div class="scan" aria-hidden="true"></div>
+    <div class="vig" aria-hidden="true"></div>
+  </div>
+
+  <!-- the remote -->
+  <nav class="remote">
+    <div class="remote__chans" id="chans"></div>
+    <div class="remote__side">
+      <button class="remote__music" id="music" type="button">
+        <i class="eq"><s></s><s></s><s></s></i>
+        <span id="musicTitle">—</span>
+      </button>
+      <p class="remote__hint">keys 1–5 <span>·</span> ↑↓ <span>·</span> M</p>
+    </div>
+  </nav>
+
+</div>
+
+<audio id="audio" loop preload="auto"></audio>
+
+<script src="media.js"></script>
+<script src="main.js"></script>
+</body>
+</html>
