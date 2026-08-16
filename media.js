@@ -18,6 +18,7 @@ const MEDIA = {
   ],
   volume:     0.6,   // normal background level
   duckVolume: 0.08,  // level while a clip with its own sound is playing
+  leadIn:     2000,  // ms the song plays alone before the first clip starts
 
 
   /* ── CH 01 · dance clips ───────────────────────────────────────

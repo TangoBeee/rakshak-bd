@@ -19,6 +19,17 @@
   const DUCK_VOL = MEDIA.duckVolume ?? 0.08;
   let duckTimer = null, ducked = false;
 
+  /* the song gets a head start before the first clip moves */
+  const LEAD_IN = MEDIA.leadIn ?? 2000;
+  let songStartedAt = 0, introDone = false, introTimer = null;
+
+  function leadInLeft() {
+    if (introDone || !songStartedAt) return 0;
+    const left = Math.max(0, songStartedAt + LEAD_IN - performance.now());
+    if (!left) introDone = true;
+    return left;
+  }
+
   function duck(on) {
     if (on === ducked) return;
     ducked = on;
@@ -86,17 +97,32 @@
     const wantSound = !!clip.sound;
     vid.muted  = !wantSound;
     vid.volume = clip.volume ?? 1;
-    duck(wantSound);
 
     vid.classList.add('is-live'); vidBlur.classList.add('is-live');
-    vidBlur.play().catch(() => {});
-    vid.play().catch(() => {
-      /* browser refused to autoplay with sound — fall back to silent */
-      vid.muted = true; duck(false); vid.play().catch(() => {});
-    });
+
+    const start = () => {
+      duck(wantSound);
+      vidBlur.play().catch(() => {});
+      vid.play().catch(() => {
+        /* browser refused to autoplay with sound — fall back to silent */
+        vid.muted = true; duck(false); vid.play().catch(() => {});
+      });
+    };
+
+    /* let the song have the room to itself for a beat first */
+    const wait = leadInLeft();
+    clearTimeout(introTimer);
+    if (wait) {
+      vid.pause(); vidBlur.pause();
+      try { vid.currentTime = 0; } catch {}       // hold on the first frame
+      introTimer = setTimeout(() => { introDone = true; start(); }, wait);
+    } else {
+      start();
+    }
   }
 
   function showPhoto(cfg) {
+    clearTimeout(introTimer);        /* cancel any pending clip start */
     vid.classList.remove('is-live'); vidBlur.classList.remove('is-live');
     vid.pause(); vidBlur.pause();
     duck(false);
@@ -509,7 +535,16 @@
     el('tv').classList.add('is-on');
     el('tv').setAttribute('aria-hidden', 'false');
     setTimeout(() => el('boot').remove(), 600);
-    if (hasSong) audio.play().then(() => musicBtn.classList.add('is-playing')).catch(() => {});
+
+    if (hasSong) {
+      /* stamped synchronously so the first clip knows to wait for the song */
+      songStartedAt = performance.now();
+      audio.play()
+        .then(()  => musicBtn.classList.add('is-playing'))
+        .catch(() => { introDone = true; });   /* no song → don't hold the clip */
+    } else {
+      introDone = true;
+    }
     tune(0);
   });
 
