@@ -21,18 +21,23 @@ const MEDIA = {
   leadIn:     2000,  // ms the song plays alone before the first clip starts
 
 
-  /* ── who's allowed in ──────────────────────────────────────────
-     The boot screen looks up the visitor's country from their IP.
-     Only these countries get past the "I am Rakshak" check.
+  /* ── who gets in ───────────────────────────────────────────────
+     The boot check quietly resolves the visitor's country and turns
+     away anyone in `block`. Everyone else is let through. Nothing on
+     the page says so — to a visitor it just looks like the site
+     knows who Rakshak is.
 
-     `bypass` is the secret word — type it anywhere on the boot
-     screen and it lets you straight through, blocked or not.
+     `bypass` is the secret word: type it anywhere on the boot
+     screen and it opens regardless, blocked or not.
 
-     Note: if the IP lookup fails or is blocked, the check lets the
-     visitor IN rather than out. Better than locking Rakshak out of
-     his own birthday because an API was down.                      */
+     If the lookup fails or is blocked, the check lets the visitor
+     IN rather than out — better than locking Rakshak out of his
+     own birthday because an API was down.
+
+     Heads up: this repo is public, so anyone who opens the source
+     can find both the country list and the word.                   */
   region: {
-    allow:  ['VN'],
+    block:  ['IN'],   // these are turned away; everywhere else gets in
     bypass: 'rak',
   },
 

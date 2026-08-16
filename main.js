@@ -488,7 +488,7 @@
   let checking = false, blocked = false, bypassed = false;
 
   const REG    = MEDIA.region || {};
-  const ALLOW  = (REG.allow || ['VN']).map(s => String(s).toUpperCase());
+  const BLOCK  = (REG.block || ['IN']).map(s => String(s).toUpperCase());
   const SECRET = String(REG.bypass || 'rak').toLowerCase();
   const napi   = (ms) => new Promise(r => setTimeout(r, ms));
 
@@ -546,17 +546,19 @@
     }
 
     await napi(300);
-    const geo = line('◦', 'confirming broadcast region', 'locating…', 'pend');
-    const cc  = bypassed ? ALLOW[0] : await located;
+    /* Deliberately says nothing about how this is decided — as far as the
+       visitor is concerned, the page simply knows who Rakshak is. */
+    const sig = line('◦', 'matching you against the real Rakshak', 'one moment…', 'pend');
+    const cc  = bypassed ? null : await located;
     await napi(600);
 
     /* Fail-open on purpose: if the lookup is blocked or offline we let them
        through rather than lock Rakshak out of his own birthday. */
-    const ok = bypassed || !cc || ALLOW.includes(cc);
+    const ok = bypassed || !cc || !BLOCK.includes(cc);
 
-    geo.className = ok ? '' : 'fail';
-    geo.innerHTML = `<b>${ok ? '✓' : '✕'}</b><span>broadcast region ` +
-                    `<em>${bypassed ? 'OVERRIDE' : (cc || 'UNKNOWN')}</em></span>`;
+    sig.className = ok ? '' : 'fail';
+    sig.innerHTML = `<b>${ok ? '✓' : '✕'}</b><span>matching you against the real Rakshak ` +
+                    `<em>${ok ? 'MATCH' : 'NO MATCH'}</em></span>`;
 
     await napi(320);
 
@@ -567,7 +569,7 @@
       blocked = true;
       box.classList.remove('is-busy');
       box.classList.add('is-fail');
-      line('✕', 'THIS BROADCAST IS LICENSED FOR VIETNAM ONLY', '', 'fail done');
+      line('✕', 'YOU ARE NOT RAKSHAK', '', 'fail done');
       block.hidden = false;
     }
     checking = false;

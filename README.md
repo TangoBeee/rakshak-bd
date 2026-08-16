@@ -57,10 +57,14 @@ verification (water intake 247%, sleep schedule: none found, rank on file: AIR 2
 age: 30 ⚠) and finishes by checking the visitor's country from their IP. There's an
 "I'm not Rakshak" link that sulks at you.
 
-### The region gate 🔒
+### The gate 🔒
 
-**Only visitors in Vietnam get past the check.** Everyone else is stopped with
-*SIGNAL UNAVAILABLE IN YOUR REGION*.
+**Visitors in India are turned away; everyone else gets in.** Blocked visitors see
+*THIS ONE IS FOR RAKSHAK ONLY — everything checked out except you.*
+
+The page never mentions location. The last verification line reads
+*matching you against the real Rakshak → MATCH / NO MATCH*, so it reads as though
+the site simply knows who he is.
 
 **The way in: type `rak`** anywhere on the boot screen. Works whether you've been
 blocked already or haven't touched the checkbox yet. Not hinted at anywhere on the
@@ -69,10 +73,11 @@ page — hand it out to whoever should get in.
 Both are in `media.js`:
 
 ```js
-region: { allow: ['VN'], bypass: 'rak' }
+region: { block: ['IN'], bypass: 'rak' }
 ```
 
-Add more countries to `allow` (`['VN','IN']`) or change the secret word.
+Add more country codes to `block` (`['IN','US']`) or change the secret word.
+`block: []` opens it to everyone.
 
 > If the IP lookup fails — API down, ad-blocker, no network — the check lets the
 > visitor **in** rather than out. Being locked out of your own birthday page because
