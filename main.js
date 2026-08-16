@@ -359,20 +359,31 @@
 
   /* ════ 8 · MUSIC ══════════════════════════════════════════════ */
 
-  const audio = el('audio'), musicBtn = el('music');
-  let hasSong = !!(MEDIA.song && MEDIA.song.src);
+  const audio = el('audio'), musicBtn = el('music'), swapBtn = el('swap');
+  const SONGS = (MEDIA.songs || []).filter(s => s && s.src);
+  let songIdx = 0;
+  let hasSong = SONGS.length > 0;
+
+  audio.volume = MEDIA.volume ?? 0.6;
+  if (SONGS.length < 2) swapBtn.hidden = true;
+
+  function loadSong(i, play) {
+    songIdx = (i + SONGS.length) % SONGS.length;
+    const s = SONGS[songIdx];
+    audio.src = encodeURI(s.src);          /* filenames may have spaces */
+    el('musicTitle').textContent = s.title || 'now playing';
+    if (play) audio.play().then(() => musicBtn.classList.add('is-playing')).catch(() => {});
+  }
 
   if (hasSong) {
-    audio.src = MEDIA.song.src;
-    audio.volume = MEDIA.song.volume ?? 0.6;
-    el('musicTitle').textContent = MEDIA.song.title || 'now playing';
+    loadSong(0, false);
     audio.addEventListener('error', () => {
-      hasSong = false;
-      el('musicTitle').textContent = 'no song file yet';
+      el('musicTitle').textContent = 'song not found';
       musicBtn.classList.remove('is-playing');
-    }, { once: true });
+    });
   } else {
     el('musicTitle').textContent = 'no song file yet';
+    swapBtn.hidden = true;
   }
 
   function toggleMusic() {
@@ -381,6 +392,14 @@
     else { audio.pause(); musicBtn.classList.remove('is-playing'); }
   }
   musicBtn.addEventListener('click', toggleMusic);
+
+  /* ⇄ — next track, keeps playing if it already was */
+  swapBtn.addEventListener('click', () => {
+    if (!hasSong) return;
+    loadSong(songIdx + 1, !audio.paused || musicBtn.classList.contains('is-playing'));
+    swapBtn.classList.add('is-spun');
+    setTimeout(() => swapBtn.classList.remove('is-spun'), 400);
+  });
 
 
   /* ════ 9 · THE IDENTITY CHECK ═════════════════════════════════ */

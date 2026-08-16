@@ -7,14 +7,16 @@
 
 const MEDIA = {
 
-  /* ── the song ──────────────────────────────────────────────────
-     Your Suno track. This is the ONLY audio on the page —
-     the dance clips are force-muted so they never fight it.        */
-  song: {
-    src:    'assets/song.mp3',
-    title:  'RAKSHAK (feat. a lot of water)',   // shown next to the ♪ button
-    volume: 0.6,
-  },
+  /* ── the songs ─────────────────────────────────────────────────
+     The first one plays on turn-on. If there's more than one, a
+     small ⇄ button appears next to the title to switch tracks.
+     This is the ONLY audio on the page — the dance clips are
+     force-muted so they never fight it.                            */
+  songs: [
+    { src: 'assets/Just Another Day.mp3',    title: 'Just Another Day' },
+    { src: 'assets/Just Another Day(1).mp3', title: 'Just Another Day · take 2' },
+  ],
+  volume: 0.6,
 
 
   /* ── CH 01 · dance clips ───────────────────────────────────────
