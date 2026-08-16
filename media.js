@@ -17,7 +17,9 @@ const MEDIA = {
     { src: 'assets/song-2.mp3', title: 'Just Another Day · take 2' },
   ],
   volume:     0.6,   // normal background level
-  duckVolume: 0.08,  // level while a clip with its own sound is playing
+  duckVolume: 0.25,  // level while a clip with its own sound plays —
+                     // low enough to hear the clip, loud enough that the
+                     // song is still clearly there underneath
   leadIn:     2000,  // ms the song plays alone before the first clip starts
 
 
