@@ -83,7 +83,9 @@ Add more country codes to `block` (`['IN','US']`) or change the secret word.
 > visitor **in** rather than out. Being locked out of your own birthday page because
 > a third-party API had a bad day would be worse than a stranger getting in.
 
-**CH 01 · DANCE FLOOR** — the clips, auto-advancing. Click the picture to skip.
+**CH 01 · DANCE FLOOR** — each clip loops until *you* move on. Swipe/drag the picture
+sideways, tap it, use `←` `→`, or hit a dot. An on-screen hint says so, and disappears
+once you've changed clip for the first time. Nothing auto-advances.
 **CH 07 · HYDRATION NETWORK** — a live hydration feed that keeps climbing past 247%.
 **CH 12 · AFTER HOURS** — the clock rolls 11:48 PM → 3:03 AM. Still online.
 **CH 23 · SPORTS DESK** — season 30 standings. Rest days: 0.
@@ -101,10 +103,19 @@ Type these anywhere once the TV is on:
 | `water` | the screen floods. hydration override, 999%. |
 | `sleep` | lights out, "attempting sleep…", then "no." |
 | `samosa` | one flies in and gets stamped **DECLINED** |
+| `badminton` | a birdie smashes across, stamped **UNRETURNABLE** |
+| `salad` | 🥗 — SUPPLIES CRITICAL |
+| `akto` | red alert, **PROD IS DOWN** … then "just kidding. happy birthday." |
+| `iit` | **23** — "he didn't tell us. we found out." |
+| `vietnam` | 🇻🇳 "you are already there." |
 | `99` | CH 99: NO SIGNAL — "he's in a meeting. try again at 1 AM." |
 | `30` | cake |
 
-Plus: **click the blinking red LIVE dot.**
+Plus two that aren't typed:
 
-Two ticker headlines hint that typed words do something, so he'll find them. Delete
-those two lines in `media.js` if you'd rather he didn't.
+- **The Konami code** — `↑ ↑ ↓ ↓ ← → ← →` — 90 pieces of confetti and HAPPY BIRTHDAY.
+  (The arrows still work the remote as you go; that's part of the fun.)
+- **Click the blinking red LIVE dot** — "not actually live. filmed earlier. he was working."
+
+Four ticker headlines hint that typed words and old arcade codes do something, so he'll
+find them. Delete those lines in `media.js` if you'd rather he didn't.

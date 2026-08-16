@@ -181,11 +181,14 @@
   const rows = (list) => list.map(([k, v, hi]) =>
     `<div class="row${hi ? ' hi' : ''}"><span>${k}</span><b>${v}</b></div>`).join('');
 
-  /* ── CH 01 ── */
-  let clipIdx = 0;
+  /* ── CH 01 ──
+     No auto-advance: each clip loops until the viewer slides to another. */
+  let clipIdx = 0, dancePlay = null, clipCount = 0, hintUsed = false;
+
   function chDance() {
     const clips = (MEDIA.clips || []).filter(c => c && c.src);
     if (clipIdx >= clips.length) clipIdx = 0;
+    clipCount = clips.length;
 
     const play = (i) => {
       clipIdx = i;
@@ -202,13 +205,30 @@
         <p class="w-dance__cap">FRIENDS OF RAKSHAK <b>·</b> ALLEGEDLY DANCING <b>·</b>
           <b class="w-dance__label">—</b></p>
         <div class="w-dance__dots">${clips.map(() => '<button type="button"></button>').join('')}</div>
+        ${clips.length > 1
+          ? `<p class="w-dance__hint${hintUsed ? ' is-gone' : ''}">
+               <i>◀</i> slide for the next clip <i>▶</i></p>`
+          : ''}
       </div>`;
 
     [...widget.querySelectorAll('.w-dance__dots button')]
-      .forEach((b, n) => b.addEventListener('click', () => play(n)));
+      .forEach((b, n) => b.addEventListener('click', () => { play(n); usedHint(); }));
 
+    dancePlay = play;
     play(clipIdx);
-    if (clips.length > 1) every(() => play((clipIdx + 1) % clips.length), 12000);
+  }
+
+  function usedHint() {
+    hintUsed = true;
+    const h = $('.w-dance__hint', widget);
+    if (h) h.classList.add('is-gone');
+  }
+
+  /* slide left/right to change clip */
+  function slideClip(dir) {
+    if (current !== 0 || !dancePlay || clipCount < 2) return;
+    dancePlay((clipIdx + dir + clipCount) % clipCount);
+    usedHint();
   }
 
   /* ── CH 07 ── */
@@ -311,6 +331,7 @@
     const ch = CHANNELS[i];
 
     clearTimers();
+    dancePlay = null;                    /* only CH 01 is slideable */
     screen.style.setProperty('--accent', `var(${ch.cc})`);
     screen.dataset.mood = ch.mood;
     el('bugNum').textContent  = ch.num;
@@ -337,12 +358,47 @@
     if (b) tune(+b.dataset.i);
   });
 
-  /* click the picture on CH 01 to skip to the next clip */
-  screen.addEventListener('click', (e) => {
-    if (current !== 0 || e.target.closest('.w-dance__dots')) return;
-    const dots = widget.querySelectorAll('.w-dance__dots button');
-    if (dots.length > 1) dots[(clipIdx + 1) % dots.length].click();
-  });
+  /* ── drag / swipe the picture on CH 01 to change clip ─────────── */
+  {
+    let down = false, x0 = 0, y0 = 0, dx = 0, sideways = false;
+
+    const settle = () => {
+      stage.style.transition = 'transform .34s var(--ease, cubic-bezier(.2,.8,.2,1))';
+      stage.style.transform  = '';
+      setTimeout(() => { stage.style.transition = ''; }, 360);
+    };
+
+    screen.addEventListener('pointerdown', (e) => {
+      if (current !== 0 || e.target.closest('.w-dance__dots, .ticker, .brand')) return;
+      down = true; sideways = false;
+      x0 = e.clientX; y0 = e.clientY; dx = 0;
+      stage.style.transition = '';
+      screen.setPointerCapture?.(e.pointerId);
+    });
+
+    screen.addEventListener('pointermove', (e) => {
+      if (!down) return;
+      const mx = e.clientX - x0, my = e.clientY - y0;
+      if (!sideways && Math.abs(mx) < 8 && Math.abs(my) < 8) return;
+      if (!sideways) sideways = Math.abs(mx) > Math.abs(my);   // decide once
+      if (!sideways) return;
+      dx = mx;
+      stage.style.transform = `translateX(${(mx * 0.34).toFixed(1)}px)`;
+    });
+
+    const release = () => {
+      if (!down) return;
+      down = false;
+      settle();
+      if (Math.abs(dx) > 55)      slideClip(dx < 0 ? 1 : -1);   // swipe
+      else if (Math.abs(dx) < 8)  slideClip(1);                 // plain tap
+      dx = 0;
+    };
+
+    screen.addEventListener('pointerup', release);
+    screen.addEventListener('pointercancel', () => { down = false; dx = 0; settle(); });
+    screen.addEventListener('pointerleave', release);
+  }
 
   let live = false;                 /* true once the set is switched on */
   let buf = '';
@@ -350,8 +406,16 @@
     if (!live) return;
     const k = e.key.toLowerCase();
 
-    /* secret words first */
-    buf = (buf + k).slice(-8);
+    /* the Konami code, tracked separately since arrows also drive the remote */
+    if (k.startsWith('arrow')) {
+      kbuf = [...kbuf, k].slice(-KONAMI.length);
+      if (kbuf.join() === KONAMI.join()) { kbuf = []; confetti(); return; }
+    } else {
+      kbuf = [];
+    }
+
+    /* secret words */
+    buf = (buf + k).slice(-20);
     for (const word in EGGS) if (buf.endsWith(word)) { buf = ''; return EGGS[word](); }
 
     const n = CHANNELS.findIndex(c => c.num === '0' + k || c.num === k);
@@ -359,6 +423,8 @@
     if (/^[1-5]$/.test(k))       return tune(+k - 1);
     if (k === 'arrowup')         { e.preventDefault(); return hop(-1); }
     if (k === 'arrowdown')       { e.preventDefault(); return hop(1); }
+    if (k === 'arrowright')      { e.preventDefault(); return slideClip(1); }
+    if (k === 'arrowleft')       { e.preventDefault(); return slideClip(-1); }
     if (k === 'm')               return toggleMusic();
   });
 
@@ -409,7 +475,69 @@
     /* type 30 — obviously */
     30: () => stage_egg(`
       <div class="egg__mid"><p class="egg__cake">🎂</p></div>`, 2600, 'egg--cake'),
+
+    /* type BADMINTON — unreturnable */
+    badminton: () => stage_egg(`
+      <div class="egg__birdie">🏸</div>
+      <div class="egg__stamp">UNRETURNABLE</div>`, 3200, 'egg--samosa'),
+
+    /* type AKTO — the work-buddy heart attack */
+    akto: () => {
+      stage_egg(`<div class="egg__mid">
+          <p class="k" style="color:var(--red)">● INCIDENT</p>
+          <p class="big" id="eggA" style="font-size:clamp(2rem,7vw,4.6rem);color:var(--red)">PROD IS DOWN</p>
+        </div>`, 4600, 'egg--dead');
+      setTimeout(() => {
+        const a = el('eggA');
+        if (!a) return;
+        a.style.color = 'var(--green)';
+        a.style.fontSize = 'clamp(1.6rem,5vw,3.4rem)';
+        a.textContent = 'just kidding. happy birthday.';
+      }, 2200);
+    },
+
+    /* type IIT — the thing he never mentions */
+    iit: () => stage_egg(`
+      <div class="egg__mid">
+        <p class="k">JEE ADVANCED · ALL INDIA RANK</p>
+        <p class="big" style="color:var(--amber)">23</p>
+        <p class="k" style="color:var(--white)">he didn't tell us. we found out.</p>
+      </div>`, 3600, 'egg--dead'),
+
+    /* type VIETNAM — only funny for one person */
+    vietnam: () => stage_egg(`
+      <div class="egg__mid">
+        <p class="egg__cake" style="font-size:clamp(60px,16vw,150px)">🇻🇳</p>
+        <p class="k" style="color:var(--white);font-size:clamp(12px,2.2vw,17px)">you are already there.</p>
+      </div>`, 3200, 'egg--dead'),
+
+    /* type SALAD — the office supply crisis */
+    salad: () => stage_egg(`
+      <div class="egg__mid">
+        <p class="egg__cake">🥗</p>
+        <p class="k" style="color:var(--green)">SUPPLIES CRITICAL</p>
+      </div>`, 2800, 'egg--cake'),
   };
+
+  /* ── the Konami code — ↑↑↓↓←→←→ ── */
+  const KONAMI = ['arrowup','arrowup','arrowdown','arrowdown','arrowleft','arrowright','arrowleft','arrowright'];
+  let kbuf = [];
+
+  function confetti() {
+    const colours = ['var(--pink)', 'var(--blue)', 'var(--amber)', 'var(--green)', 'var(--red)', '#fff'];
+    let bits = '';
+    for (let i = 0; i < 90; i++) {
+      bits += `<i style="left:${(Math.random() * 100).toFixed(1)}%;` +
+              `background:${colours[i % colours.length]};` +
+              `animation-duration:${(2.2 + Math.random() * 2.2).toFixed(2)}s;` +
+              `animation-delay:${(Math.random() * 0.9).toFixed(2)}s"></i>`;
+    }
+    stage_egg(`<div class="egg__confetti">${bits}</div>
+      <div class="egg__mid">
+        <p class="big" style="font-size:clamp(2rem,7.5vw,5.4rem)">HAPPY BIRTHDAY</p>
+        <p class="k" style="color:var(--white)">RAKSHAK <span style="opacity:.5">·</span> 30</p>
+      </div>`, 5400, 'egg--party');
+  }
 
   /* click the LIVE dot */
   $('.rec').addEventListener('click', (e) => {
@@ -431,7 +559,7 @@
 
   const audio = el('audio'), musicBtn = el('music'), swapBtn = el('swap');
   const SONGS = (MEDIA.songs || []).filter(s => s && s.src);
-  let songIdx = 0;
+  let songIdx = 0, badSongs = 0;
   let hasSong = SONGS.length > 0;
 
   audio.volume = MEDIA.volume ?? 0.6;
@@ -442,14 +570,26 @@
     const s = SONGS[songIdx];
     audio.src = encodeURI(s.src);          /* filenames may have spaces */
     el('musicTitle').textContent = s.title || 'now playing';
-    if (play) audio.play().then(() => musicBtn.classList.add('is-playing')).catch(() => {});
+    if (play) audio.play()
+      .then(() => { badSongs = 0; musicBtn.classList.add('is-playing'); })
+      .catch(() => {});
   }
 
   if (hasSong) {
     loadSong(0, false);
+
+    /* one song ends → the next one starts; wraps back round for ever */
+    audio.addEventListener('ended', () => { badSongs = 0; loadSong(songIdx + 1, true); });
+
+    /* a missing/broken file shouldn't stop the music — skip to the next,
+       unless every single one is broken */
     audio.addEventListener('error', () => {
-      el('musicTitle').textContent = 'song not found';
-      musicBtn.classList.remove('is-playing');
+      if (++badSongs >= SONGS.length) {
+        el('musicTitle').textContent = 'song not found';
+        musicBtn.classList.remove('is-playing');
+        return;
+      }
+      loadSong(songIdx + 1, true);
     });
   } else {
     el('musicTitle').textContent = 'no song file yet';

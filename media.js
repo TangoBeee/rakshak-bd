@@ -8,10 +8,9 @@
 const MEDIA = {
 
   /* ── the songs ─────────────────────────────────────────────────
-     The first one plays on turn-on. If there's more than one, a
-     small ⇄ button appears next to the title to switch tracks.
-     This is the ONLY audio on the page — the dance clips are
-     force-muted so they never fight it.                            */
+     The first one plays on turn-on. When it ends the next starts,
+     and after the last it wraps back to the first — round and round.
+     A small ⇄ button next to the title skips ahead by hand.        */
   songs: [
     { src: 'assets/song-1.mp3', title: 'Just Another Day' },
     { src: 'assets/song-2.mp3', title: 'Just Another Day · take 2' },
@@ -108,10 +107,14 @@ const MEDIA = {
     'SALAD SUPPLIES IN THE OFFICE RUNNING DANGEROUSLY LOW',
     'HE SAYS HE IS "JUST FINISHING ONE THING"',
 
-    /* these two are hints — they make the easter eggs findable.
-       secret words: WATER · SLEEP · SAMOSA · 99 · 30
-       (also: click the blinking red LIVE dot)                      */
+    /* these are hints — they make the easter eggs findable.
+       typed words:  WATER · SLEEP · SAMOSA · BADMINTON · SALAD
+                     AKTO · IIT · VIETNAM · 99 · 30
+       also:         the Konami code (↑↑↓↓←→←→)
+                     clicking the blinking red LIVE dot             */
     'VIEWERS ARE ADVISED TO TRY TYPING THE WORD "WATER"',
     'CERTAIN WORDS ARE KNOWN TO AFFECT THIS BROADCAST',
+    'TYPE WHAT HE LIKES. TYPE WHAT HE AVOIDS. SEE WHAT HAPPENS.',
+    'OLD ARCADE CHEAT CODES REPORTEDLY STILL WORK HERE',
   ],
 };
